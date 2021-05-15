@@ -50,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
         setupView(mIsSignUpShowing);
 
         if (mAuthHelper.isLoggedIn()) {
-            startActivity(QuotesActivity.getCallingIntent(this));
+            startActivity(StreamActivity.getCallingIntent(this));
         }
     }
 
@@ -87,7 +87,7 @@ public class LoginActivity extends AppCompatActivity {
         mProgressDialog.setCancelable(true);
         mProgressDialog.show();
         NetworkRequest request = new NetworkRequest();
-        request.doLogin(username, password, mLoginCallback);
+        request.login(username, password, mLoginCallback);
     }
 
     /**
@@ -108,7 +108,7 @@ public class LoginActivity extends AppCompatActivity {
         mProgressDialog.setCancelable(true);
         mProgressDialog.show();
         NetworkRequest request = new NetworkRequest();
-        request.doSignUp(username, password, profileColor, mSignUpCallback);
+        request.signUp(username, password, profileColor, mSignUpCallback);
     }
 
     private String getUsernameText() {
@@ -131,18 +131,21 @@ public class LoginActivity extends AppCompatActivity {
         mAuthHelper.setIdToken(token);
 
         // start profile activity
-        startActivity(QuotesActivity.getCallingIntent(this));
+        startActivity(StreamActivity.getCallingIntent(this));
     }
 
     /**
      * Callback for login
      */
-    private NetworkRequest.Callback<Token> mLoginCallback = new NetworkRequest.Callback<Token>() {
+    private NetworkRequest.Callback<String> mLoginCallback = new NetworkRequest.Callback<String>() {
         @Override
-        public void onResponse(@NonNull Token response) {
+        public void onResponse(@NonNull String response) {
             dismissDialog();
+
+            Token token = new Token();
+            token.setIdToken(response);
             // save token and go to profile page
-            saveSessionDetails(response);
+            saveSessionDetails(token);
         }
 
         @Override
@@ -152,8 +155,8 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
-        public Class<Token> type() {
-            return Token.class;
+        public Class<String> type() {
+            return String.class;
         }
 
     };

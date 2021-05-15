@@ -16,9 +16,8 @@
 
     <string name="progress_signup">Sign up in progress…please wait</string>
     <string name="progress_login">Login in progress…please wait</string>
-    <string name="progress_quote">Fetching quote…please wait</string>
+    <string name="progress_stream_creation">Creating live video stream…please wait</string>
 
-
-    <string name="button_text_protected_quote">Get Quote</string>
+    <string name="button_text_add">Add</string>
     <string name="button_text_logout">Logout</string>
 </resources>

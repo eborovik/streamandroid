@@ -4,16 +4,17 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.eborovik.streamer.network.NetworkRequest;
 
-public class QuotesActivity extends AppCompatActivity implements View.OnClickListener {
+public class StreamActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView mTextWelcome;
     private TextView mTextQuote;
@@ -25,17 +26,16 @@ public class QuotesActivity extends AppCompatActivity implements View.OnClickLis
     private ProgressDialog mProgressDialog;
 
     public static Intent getCallingIntent(Context context) {
-        return new Intent(context, QuotesActivity.class);
+        return new Intent(context, StreamActivity.class);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_quotes);
+        setContentView(R.layout.activity_stream);
 
         mTextWelcome = (TextView) findViewById(R.id.text_username);
-        mTextQuote = (TextView) findViewById(R.id.text_quote);
-        mButtonRandom = (Button) findViewById(R.id.button_random_quote);
+        mButtonRandom = (Button) findViewById(R.id.button_add);
         mButtonLogout = (Button) findViewById(R.id.button_logout);
 
         mProgressDialog = new ProgressDialog(this);
@@ -54,48 +54,36 @@ public class QuotesActivity extends AppCompatActivity implements View.OnClickLis
         mButtonLogout.setOnClickListener(this);
     }
 
-    /**
-     * Sets the welcome text for the signed in user
-     * @param username - username for the user
-     */
     private void setWelcomeText(String username) {
         mTextWelcome.setText(String.format(getString(R.string.text_welcome), username));
-    }
-
-    /**
-     * Sets the quote text for the signed in user
-     * @param quote - the quote
-     */
-    private void setQuoteText(String quote) {
-        mTextQuote.setText(quote);
     }
 
     @Override
     public void onClick(View view) {
         if (view == mButtonRandom) {
-            doGetQuote(mAuthHelper.getIdToken());
+            doAddStream(mAuthHelper.getIdToken());
         } else if (view == mButtonLogout) {
             mAuthHelper.clear();
             finish();
         }
     }
 
-    private void doGetQuote(String token) {
+    private void doAddStream(String token) {
         NetworkRequest request = new NetworkRequest();
-        mProgressDialog.setMessage(getString(R.string.progress_quote));
+        mProgressDialog.setMessage(getString(R.string.progress_stream_creation));
         mProgressDialog.setCancelable(true);
         mProgressDialog.show();
-        request.doGetProtectedQuote(token, new NetworkRequest.Callback<String>() {
+        request.addStream(token, new NetworkRequest.Callback<String>() {
             @Override
             public void onResponse(@NonNull String response) {
                 dismissDialog();
-                setQuoteText(response);
+                //setQuoteText(response);
             }
 
             @Override
             public void onError(String error) {
                 dismissDialog();
-                Toast.makeText(QuotesActivity.this, error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(StreamActivity.this, error, Toast.LENGTH_SHORT).show();
             }
 
             @Override

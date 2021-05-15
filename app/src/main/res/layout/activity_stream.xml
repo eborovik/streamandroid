@@ -19,23 +19,13 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Title"/>
 
     <Button
-        android:id="@+id/button_random_quote"
+        android:id="@+id/button_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/text_username"
         android:layout_centerHorizontal="true"
         android:layout_margin="@dimen/button_margin"
-        android:text="@string/button_text_protected_quote"/>
-
-    <TextView
-        android:id="@+id/text_quote"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:layout_below="@id/button_random_quote"
-        android:textStyle="italic"
-        android:gravity="center"
-        tools:text="Chuck Norris"/>
+        android:text="@string/button_text_add"/>    
 
     <Button
         android:id="@+id/button_logout"

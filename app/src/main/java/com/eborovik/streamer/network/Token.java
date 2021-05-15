@@ -10,6 +10,10 @@ public class Token implements NetworkRequest.ApiResponse {
         return idToken;
     }
 
+    public void setIdToken(String token) {
+        idToken = token;
+    }
+
     @Override
     public String string() {
         return idToken;

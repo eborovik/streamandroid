@@ -6,6 +6,7 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.eborovik.streamer.models.LiveVideoModel;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
@@ -22,10 +23,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-
-/**
- * Network Request class to abstract implementation details of requests
- */
 public class NetworkRequest {
     private static final String BASE_URL = "http://10.0.2.2:5000/";
     private Callback mCallback;
@@ -42,24 +39,13 @@ public class NetworkRequest {
                 .build();
     }
 
-    /**
-     * Sets the callback for the network request
-     * @param callback
-     */
     public void setCallback(Callback callback) {
         mCallback = callback;
     }
 
-    /**
-     * Login
-     *
-     * @param username - username
-     * @param password - password
-     * @param callback - callback
-     */
-    public void doLogin(@NonNull String username,
-                        @NonNull String password,
-                        Callback callback) {
+    public void login(@NonNull String username,
+                      @NonNull String password,
+                      Callback callback) {
         setCallback(callback);
 
         Map<String, String> params = new HashMap<>();
@@ -70,18 +56,10 @@ public class NetworkRequest {
         doPostRequest(loginUrl, params, callback);
     }
 
-    /**
-     * Sign up
-     *
-     * @param username - username
-     * @param password - password
-     * @param profileColor - theme color for the user profile
-     * @param callback - callback
-     */
-    public void doSignUp(@NonNull String username,
-                         @NonNull String password,
-                         @NonNull String profileColor,
-                         @Nullable Callback callback) {
+    public void signUp(@NonNull String username,
+                       @NonNull String password,
+                       @NonNull String profileColor,
+                       @Nullable Callback callback) {
         setCallback(callback);
 
         Map<String, String> params = new HashMap<>();
@@ -93,39 +71,26 @@ public class NetworkRequest {
         doPostRequest(signUpUrl, params, callback);
     }
 
-    /**
-     * Get protected quote
-     *
-     * @param token - token
-     * @param callback - callback
-     */
-    public void doGetProtectedQuote(@NonNull String token, @Nullable Callback callback) {
+
+    public void addStream(@NonNull String token, @Nullable Callback callback) {
         setCallback(callback);
 
-        String protectedQuoteUrl = BASE_URL + "api/protected/random-quote";
-        doGetRequestWithToken(protectedQuoteUrl, new HashMap<String, String>(), token, callback);
+        String addUrl = BASE_URL + "api/livevideo/add";
+        LiveVideoModel video = new LiveVideoModel();
+        video.setName("some-name");
+        Gson g = new Gson();
+        String jsonParams = g.toJson(video);
+        doPostRequest(addUrl, jsonParams,token, callback);
     }
 
-    /**
-     * Execute post request
-     *
-     * @param url
-     * @param params
-     * @param callback
-     */
     private void doPostRequest(@NonNull String url, @NonNull Map<String, String> params,
                                @Nullable final Callback callback) {
         HttpUrl httpUrl = HttpUrl.parse(url);
 
-        /*FormBody.Builder bodyBuilder = new FormBody.Builder();
-        for (String string : params.keySet()) {
-            bodyBuilder.addEncoded(string, params.get(string));
-        }*/
-
         String json = "{\"email\":\"" + params.get("email") + "\",\"password\":\"" + params.get("password")+ "\"}";
 
         RequestBody body = RequestBody.create(
-                MediaType.parse("application/json; charset=utf-8"), json);
+                json, MediaType.parse("application/json; charset=utf-8"));
 
         Request request = new Request.Builder()
                 .addHeader("content-type", "application/json")
@@ -133,13 +98,26 @@ public class NetworkRequest {
                 .post(body)
                 .build();
 
-
-        /*Request request = new Request.Builder()
-                .url(httpUrl)
-                .post(bodyBuilder.build())
-                .build();*/
-
         doRequest(request, callback);
+    }
+
+    private void doPostRequest(@NonNull String url, @NonNull String paramsJson,
+                               @Nullable String token, @Nullable Callback callback) {
+        HttpUrl httpUrl = HttpUrl.parse(url);
+
+        RequestBody body = RequestBody.create(
+                paramsJson, MediaType.parse("application/json; charset=utf-8"));
+
+        Request.Builder requestBuilder = new Request.Builder()
+                .addHeader("content-type", "application/json")
+                .url(httpUrl)
+                .post(body);
+
+        if (token != null) {
+            requestBuilder.addHeader("Authorization", "Bearer " + token);
+        }
+
+        doRequest(requestBuilder.build(), callback);
     }
 
     private void doGetRequestWithToken(@NonNull String url, @NonNull Map<String, String> params,
@@ -162,17 +140,6 @@ public class NetworkRequest {
         doRequest(requestBuilder.build(), callback);
     }
 
-    private void doGetRequestNoToken(@NonNull String url, @NonNull Map<String, String> params,
-                                     @NonNull String token, @Nullable Callback callback) {
-        doGetRequestWithToken(url, params, token, callback);
-    }
-
-    /**
-     * Makes request and fires callback as at when due
-     *
-     * @param request
-     * @param callback
-     */
     private void doRequest(@NonNull Request request, final Callback callback) {
 
         mClient.newCall(request)
@@ -233,19 +200,12 @@ public class NetworkRequest {
         }
     }
 
-    /**
-     * Callback interface for network response and error
-     * @param <T>
-     */
     public interface Callback<T> {
         void onResponse(@NonNull T response);
         void onError(String error);
         Class<T> type();
     }
 
-    /**
-     * ApiResponse interface
-     */
     public interface ApiResponse {
         String string();
     }
