@@ -24,7 +24,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class NetworkRequest {
-    private static final String BASE_URL = "http://10.0.2.2:5000/";
+    private static final String BASE_URL = "http://10.0.2.2:7000/";
+    //private static final String BASE_URL = "http://86.57.153.47:7000/";
     private Callback mCallback;
 
     private OkHttpClient mClient;
@@ -72,15 +73,24 @@ public class NetworkRequest {
     }
 
 
-    public void addStream(@NonNull String token, @Nullable Callback callback) {
+    public void startStream(@NonNull String token, @Nullable String streamId, @Nullable Callback callback) {
         setCallback(callback);
 
-        String addUrl = BASE_URL + "api/livevideo/add";
+        String url = BASE_URL + "api/livevideo/start";
         LiveVideoModel video = new LiveVideoModel();
+        video.setStreamId(streamId);
         video.setName("some-name");
+
         Gson g = new Gson();
         String jsonParams = g.toJson(video);
-        doPostRequest(addUrl, jsonParams,token, callback);
+        doPostRequest(url, jsonParams, token, callback);
+    }
+
+    public void stopStream(@NonNull String token, String streamId, @Nullable Callback callback) {
+        setCallback(callback);
+        String url = BASE_URL + "api/livevideo/stop/" + streamId;
+
+        doGetRequest(url, token, callback);
     }
 
     private void doPostRequest(@NonNull String url, @NonNull Map<String, String> params,
@@ -120,14 +130,11 @@ public class NetworkRequest {
         doRequest(requestBuilder.build(), callback);
     }
 
-    private void doGetRequestWithToken(@NonNull String url, @NonNull Map<String, String> params,
-                                       @Nullable String token, @Nullable Callback callback) {
+    private void doGetRequest(@NonNull String url,
+                              @Nullable String token, @Nullable Callback callback) {
         HttpUrl httpUrl = HttpUrl.parse(url);
 
         HttpUrl.Builder urlBuilder = httpUrl.newBuilder();
-        for (String key : params.keySet()) {
-            urlBuilder.addQueryParameter(key, params.get(key));
-        }
 
         Request.Builder requestBuilder = new Request.Builder()
                 .url(urlBuilder.build())

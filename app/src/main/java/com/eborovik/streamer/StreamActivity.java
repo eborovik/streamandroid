@@ -7,12 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.eborovik.streamer.network.NetworkRequest;
 
 public class StreamActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -61,37 +57,14 @@ public class StreamActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View view) {
         if (view == mButtonRandom) {
-            doAddStream(mAuthHelper.getIdToken());
+            //doAddStream(mAuthHelper.getIdToken());
         } else if (view == mButtonLogout) {
             mAuthHelper.clear();
             finish();
         }
     }
 
-    private void doAddStream(String token) {
-        NetworkRequest request = new NetworkRequest();
-        mProgressDialog.setMessage(getString(R.string.progress_stream_creation));
-        mProgressDialog.setCancelable(true);
-        mProgressDialog.show();
-        request.addStream(token, new NetworkRequest.Callback<String>() {
-            @Override
-            public void onResponse(@NonNull String response) {
-                dismissDialog();
-                //setQuoteText(response);
-            }
 
-            @Override
-            public void onError(String error) {
-                dismissDialog();
-                Toast.makeText(StreamActivity.this, error, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public Class<String> type() {
-                return String.class;
-            }
-        });
-    }
 
     /**
      * Dismiss the dialog if it's showing

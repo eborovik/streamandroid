@@ -50,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
         setupView(mIsSignUpShowing);
 
         if (mAuthHelper.isLoggedIn()) {
-            startActivity(StreamActivity.getCallingIntent(this));
+            startActivity(RtmpActivity.getCallingIntent(this));
         }
     }
 

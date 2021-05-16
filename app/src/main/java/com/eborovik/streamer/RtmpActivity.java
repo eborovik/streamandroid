@@ -6,7 +6,6 @@ import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -24,12 +23,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.eborovik.streamer.models.LiveVideoModel;
+import com.eborovik.streamer.network.NetworkRequest;
 import com.google.android.material.navigation.NavigationView;
 import com.pedro.encoder.input.video.CameraHelper;
 import com.pedro.encoder.input.video.CameraOpenException;
@@ -38,12 +40,8 @@ import com.pedro.rtplibrary.rtmp.RtmpCamera1;
 import net.ossrs.rtmp.ConnectCheckerRtmp;
 
 import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class RtmpActivity extends AppCompatActivity
         implements Button.OnClickListener, ConnectCheckerRtmp, SurfaceHolder.Callback,
@@ -51,6 +49,7 @@ public class RtmpActivity extends AppCompatActivity
 
     private Integer[] orientations = new Integer[] { 0, 90, 180, 270 };
 
+    private LiveVideoModel videoModel;
     private RtmpCamera1 rtmpCamera1;
     private Button bStartStop, bRecord;
     private EditText etUrl;
@@ -69,11 +68,25 @@ public class RtmpActivity extends AppCompatActivity
     private String lastVideoBitrate;
     private TextView tvBitrate;
 
+    private AuthHelper mAuthHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_rtmp);
+
+        mAuthHelper = AuthHelper.getInstance(this);
+        if (mAuthHelper.isLoggedIn()) {
+            setupView();
+        } else {
+            finish();
+        }
+    }
+
+    private void setupView(){
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_custom);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
@@ -83,12 +96,10 @@ public class RtmpActivity extends AppCompatActivity
         rtmpCamera1 = new RtmpCamera1(surfaceView, this);
         prepareOptionsMenuViews();
         tvBitrate = findViewById(R.id.tv_bitrate);
-        etUrl = findViewById(R.id.et_rtp_url);
-        etUrl.setHint(R.string.hint_rtmp);
+
         bStartStop = findViewById(R.id.b_start_stop);
         bStartStop.setOnClickListener(this);
-        bRecord = findViewById(R.id.b_record);
-        bRecord.setOnClickListener(this);
+
         Button switchCamera = findViewById(R.id.switch_camera);
         switchCamera.setOnClickListener(this);
     }
@@ -208,75 +219,17 @@ public class RtmpActivity extends AppCompatActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.b_start_stop:
-                Log.d("TAG_R", "b_start_stop: ");
+                NetworkRequest request = new NetworkRequest();
                 if (!rtmpCamera1.isStreaming()) {
-                    bStartStop.setText(getResources().getString(R.string.stop_button));
-                    String user = etWowzaUser.getText().toString();
-                    String password = etWowzaPassword.getText().toString();
-                    if (!user.isEmpty() && !password.isEmpty()) {
-                        rtmpCamera1.setAuthorization(user, password);
-                    }
-                    if (rtmpCamera1.isRecording() || prepareEncoders()) {
-                        rtmpCamera1.startStream(etUrl.getText().toString());
-                    } else {
-                        //If you see this all time when you start stream,
-                        //it is because your encoder device dont support the configuration
-                        //in video encoder maybe color format.
-                        //If you have more encoder go to VideoEncoder or AudioEncoder class,
-                        //change encoder and try
-                        Toast.makeText(this, "Error preparing stream, This device cant do it",
-                                Toast.LENGTH_SHORT).show();
-                        bStartStop.setText(getResources().getString(R.string.start_button));
-                    }
-                } else {
-                    bStartStop.setText(getResources().getString(R.string.start_button));
-                    rtmpCamera1.stopStream();
+                    request.startStream(mAuthHelper.getIdToken(), mAuthHelper.getStreamId(), startStreamCallback);
+
+                }
+                else {
+                    request.stopStream(mAuthHelper.getIdToken(), mAuthHelper.getStreamId(), null);
+                    stopStream();
                 }
                 break;
-            case R.id.b_record:
-                Log.d("TAG_R", "b_start_stop: ");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    if (!rtmpCamera1.isRecording()) {
-                        try {
-                            if (!folder.exists()) {
-                                folder.mkdir();
-                            }
-                            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
-                            currentDateAndTime = sdf.format(new Date());
-                            if (!rtmpCamera1.isStreaming()) {
-                                if (prepareEncoders()) {
-                                    rtmpCamera1.startRecord(
-                                            folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-                                    bRecord.setText(R.string.stop_record);
-                                    Toast.makeText(this, "Recording... ", Toast.LENGTH_SHORT).show();
-                                } else {
-                                    Toast.makeText(this, "Error preparing stream, This device cant do it",
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            } else {
-                                rtmpCamera1.startRecord(
-                                        folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-                                bRecord.setText(R.string.stop_record);
-                                Toast.makeText(this, "Recording... ", Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (IOException e) {
-                            rtmpCamera1.stopRecord();
-                            bRecord.setText(R.string.start_record);
-                            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        rtmpCamera1.stopRecord();
-                        bRecord.setText(R.string.start_record);
-                        Toast.makeText(this,
-                                "file " + currentDateAndTime + ".mp4 saved in " + folder.getAbsolutePath(),
-                                Toast.LENGTH_SHORT).show();
-                        currentDateAndTime = "";
-                    }
-                } else {
-                    Toast.makeText(this, "You need min JELLY_BEAN_MR2(API 18) for do it...",
-                            Toast.LENGTH_SHORT).show();
-                }
-                break;
+
             case R.id.switch_camera:
                 try {
                     rtmpCamera1.switchCamera();
@@ -287,6 +240,28 @@ public class RtmpActivity extends AppCompatActivity
             default:
                 break;
         }
+    }
+
+    private void startStream(String url){
+        bStartStop.setText(getResources().getString(R.string.stop_button));
+        String user = etWowzaUser.getText().toString();
+        String password = etWowzaPassword.getText().toString();
+        if (!user.isEmpty() && !password.isEmpty()) {
+            rtmpCamera1.setAuthorization(user, password);
+        }
+        if (rtmpCamera1.isRecording() || prepareEncoders()) {
+
+            rtmpCamera1.startStream(url);
+        } else {
+            Toast.makeText(this, "Error preparing stream, this device doesn't support it",
+                    Toast.LENGTH_SHORT).show();
+            bStartStop.setText(getResources().getString(R.string.start_button));
+        }
+    }
+
+    private void stopStream(){
+        bStartStop.setText(getResources().getString(R.string.start_button));
+        rtmpCamera1.stopStream();
     }
 
     private boolean prepareEncoders() {
@@ -429,4 +404,32 @@ public class RtmpActivity extends AppCompatActivity
         }
         return true;
     }
+
+    /**
+     * Callback for stream creation
+     */
+    private NetworkRequest.Callback<LiveVideoModel> startStreamCallback = new NetworkRequest.Callback<LiveVideoModel>() {
+        @Override
+        public void onResponse(@NonNull LiveVideoModel response) {
+            videoModel = response;
+
+            if(mAuthHelper.getStreamId() == null){
+                mAuthHelper.setStreamId(videoModel.getStreamId());
+            }
+
+            startStream(videoModel.getUrl());
+            etUrl = findViewById(R.id.et_rtp_url);
+            etUrl.setHint(videoModel.getUrl());
+        }
+
+        @Override
+        public void onError(String error) {
+            Toast.makeText(RtmpActivity.this, error, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public Class<LiveVideoModel> type() {
+            return LiveVideoModel.class;
+        }
+    };
 }

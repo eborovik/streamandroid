@@ -14,9 +14,10 @@ public class AuthHelper {
      * Key for username in the jwt claim
      */
     private static final String JWT_KEY_USERNAME = "username";
-
     private static final String PREFS = "prefs";
     private static final String PREF_TOKEN = "pref_token";
+    private static final String STREAM_ID = "stream_id";
+
     private SharedPreferences mPrefs;
 
     private static AuthHelper sInstance;
@@ -36,6 +37,17 @@ public class AuthHelper {
     public void setIdToken(@NonNull Token token) {
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putString(PREF_TOKEN, token.getIdToken());
+        editor.apply();
+    }
+
+    @Nullable
+    public String getStreamId() {
+        return  mPrefs.getString(STREAM_ID, null);
+    }
+
+    public void setStreamId(@NonNull String streamId) {
+        SharedPreferences.Editor editor = mPrefs.edit();
+        editor.putString(STREAM_ID, streamId);
         editor.apply();
     }
 
