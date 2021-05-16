@@ -131,7 +131,7 @@ public class LoginActivity extends AppCompatActivity {
         mAuthHelper.setIdToken(token);
 
         // start profile activity
-        startActivity(StreamActivity.getCallingIntent(this));
+        startActivity(RtmpActivity.getCallingIntent(this));
     }
 
     /**
