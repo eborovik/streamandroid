@@ -32,6 +32,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.eborovik.streamer.models.LiveVideoModel;
 import com.eborovik.streamer.network.NetworkRequest;
+import com.eborovik.streamer.network.SignalRClient;
 import com.google.android.material.navigation.NavigationView;
 import com.pedro.encoder.input.video.CameraHelper;
 import com.pedro.encoder.input.video.CameraOpenException;
@@ -69,6 +70,7 @@ public class RtmpActivity extends AppCompatActivity
     private TextView tvBitrate;
 
     private AuthHelper mAuthHelper;
+    private SignalRClient src;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +81,8 @@ public class RtmpActivity extends AppCompatActivity
 
         mAuthHelper = AuthHelper.getInstance(this);
         if (mAuthHelper.isLoggedIn()) {
+            src = new SignalRClient("http://10.0.2.2:7000/streamhub");
+            src.start();
             setupView();
         } else {
             finish();
