@@ -81,9 +81,9 @@ public class RtmpActivity extends AppCompatActivity
 
         mAuthHelper = AuthHelper.getInstance(this);
         if (mAuthHelper.isLoggedIn()) {
-            src = new SignalRClient("http://10.0.2.2:7000/streamhub");
-            src.start();
             setupView();
+            src = new SignalRClient("http://10.0.2.2:7000/streamhub");
+            src.setCallback(startRecordingCallback);
         } else {
             finish();
         }
@@ -225,7 +225,10 @@ public class RtmpActivity extends AppCompatActivity
             case R.id.b_start_stop:
                 NetworkRequest request = new NetworkRequest();
                 if (!rtmpCamera1.isStreaming()) {
+
                     request.startStream(mAuthHelper.getIdToken(), mAuthHelper.getStreamId(), startStreamCallback);
+
+
 
                 }
                 else {
@@ -247,24 +250,20 @@ public class RtmpActivity extends AppCompatActivity
     }
 
     private void startStream(String url){
-        bStartStop.setText(getResources().getString(R.string.stop_button));
-        String user = etWowzaUser.getText().toString();
-        String password = etWowzaPassword.getText().toString();
-        if (!user.isEmpty() && !password.isEmpty()) {
-            rtmpCamera1.setAuthorization(user, password);
-        }
+        //bStartStop.setText(getResources().getString(R.string.stop_button));
+
         if (rtmpCamera1.isRecording() || prepareEncoders()) {
 
             rtmpCamera1.startStream(url);
         } else {
-            Toast.makeText(this, "Error preparing stream, this device doesn't support it",
-                    Toast.LENGTH_SHORT).show();
-            bStartStop.setText(getResources().getString(R.string.start_button));
+            //Toast.makeText(this, "Error preparing stream, this device doesn't support it",
+                    //Toast.LENGTH_SHORT).show();
+           // bStartStop.setText(getResources().getString(R.string.start_button));
         }
     }
 
     private void stopStream(){
-        bStartStop.setText(getResources().getString(R.string.start_button));
+        //bStartStop.setText(getResources().getString(R.string.start_button));
         rtmpCamera1.stopStream();
     }
 
@@ -281,6 +280,14 @@ public class RtmpActivity extends AppCompatActivity
                 rgChannel.getCheckedRadioButtonId() == R.id.rb_stereo, cbEchoCanceler.isChecked(),
                 cbNoiseSuppressor.isChecked());
     }
+
+    private SignalRClient.Callback<String> startRecordingCallback = new SignalRClient.Callback<String> () {
+        @Override
+        public void execute(String url) {
+            stopStream();
+            startStream(url);
+        }
+    };
 
     @Override
     public void onConnectionSuccessRtmp() {
@@ -409,9 +416,6 @@ public class RtmpActivity extends AppCompatActivity
         return true;
     }
 
-    /**
-     * Callback for stream creation
-     */
     private NetworkRequest.Callback<LiveVideoModel> startStreamCallback = new NetworkRequest.Callback<LiveVideoModel>() {
         @Override
         public void onResponse(@NonNull LiveVideoModel response) {
@@ -422,6 +426,7 @@ public class RtmpActivity extends AppCompatActivity
             }
 
             startStream(videoModel.getUrl());
+            src.start(mAuthHelper.getStreamId());
             etUrl = findViewById(R.id.et_rtp_url);
             etUrl.setHint(videoModel.getUrl());
         }

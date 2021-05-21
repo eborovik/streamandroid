@@ -1,6 +1,5 @@
 package com.eborovik.streamer.network;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.microsoft.signalr.HubConnection;
@@ -10,7 +9,16 @@ public class SignalRClient
 {
     private static final String TAG = SignalRClient.class.getSimpleName();
     HubConnection hubConnection;
-    private Context context;
+
+    public  interface Callback<String>{
+        void execute(String param);
+    }
+
+    private Callback callback;
+
+    public void setCallback(Callback callback) {
+        this.callback = callback;
+    }
 
     public SignalRClient(String url)
     {
@@ -19,15 +27,22 @@ public class SignalRClient
     }
     private void handleIncomingMethods()
     {
-        this.hubConnection.on("ReceiveMessage", (user, message) -> { // OK
-            Log.e(TAG, user + ": " + message);
-        }, String.class, String.class);
+        this.hubConnection.on("StartRecording", (streamUrl) -> {
+            Log.e(TAG, streamUrl);
+            callback.execute(streamUrl);
+        }, String.class);
     }
 
-    public void start()
+    private void register(String streamId) {
+        this.hubConnection.send("Register", streamId);
+    }
+
+    public void start(String streamId)
     {
+        this.callback = callback;
         try {
             this.hubConnection.start().blockingAwait();
+            register(streamId);
         } catch (Exception e) {
             e.printStackTrace();
         }

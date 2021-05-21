@@ -27,9 +27,6 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressDialog mProgressDialog;
     private AuthHelper mAuthHelper;
 
-    /**
-     * Flag to show whether it is sign up field that's showing
-     */
     private boolean mIsSignUpShowing;
 
     @Override
@@ -54,11 +51,6 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Sets up the view based on whether or not the sign up screen is showing
-     *
-     * @param isSignUpShowing - flag indicating whether the sign up form is showing
-     */
     private void setupView(boolean isSignUpShowing) {
         mIsSignUpShowing = isSignUpShowing;
         mTitleAction.setText(isSignUpShowing ? R.string.text_sign_up : R.string.text_login);
@@ -74,7 +66,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Log the user in and navigate to profile screen when successful
      */
-    private void doLogin() {
+    private void login() {
         String username = getUsernameText();
         String password = getPasswordText();
 
@@ -87,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
         mProgressDialog.setCancelable(true);
         mProgressDialog.show();
         NetworkRequest request = new NetworkRequest();
-        request.login(username, password, mLoginCallback);
+        request.login(username, password, loginCallback);
     }
 
     /**
@@ -134,10 +126,7 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(RtmpActivity.getCallingIntent(this));
     }
 
-    /**
-     * Callback for login
-     */
-    private NetworkRequest.Callback<String> mLoginCallback = new NetworkRequest.Callback<String>() {
+    private NetworkRequest.Callback<String> loginCallback = new NetworkRequest.Callback<String>() {
         @Override
         public void onResponse(@NonNull String response) {
             dismissDialog();
@@ -161,9 +150,6 @@ public class LoginActivity extends AppCompatActivity {
 
     };
 
-    /**
-     * Callback for sign up
-     */
     private NetworkRequest.Callback<Token> mSignUpCallback = new NetworkRequest.Callback<Token>() {
         @Override
         public void onResponse(@NonNull Token response) {
@@ -184,18 +170,12 @@ public class LoginActivity extends AppCompatActivity {
         }
     };
 
-    /**
-     * Dismiss the dialog if it's showing
-     */
     private void dismissDialog() {
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
     }
 
-    /**
-     * Click listener to show sign up form
-     */
     private final View.OnClickListener showSignUpFormClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -203,9 +183,6 @@ public class LoginActivity extends AppCompatActivity {
         }
     };
 
-    /**
-     * Click listener to show login form
-     */
     private final View.OnClickListener showLoginFormClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -213,19 +190,13 @@ public class LoginActivity extends AppCompatActivity {
         }
     };
 
-    /**
-     * Click listener to invoke login
-     */
     private final View.OnClickListener doLoginClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            doLogin();
+            login();
         }
     };
 
-    /**
-     * Click listener to invoke sign up
-     */
     private final View.OnClickListener doSignUpClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
