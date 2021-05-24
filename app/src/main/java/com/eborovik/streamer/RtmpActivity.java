@@ -17,7 +17,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -64,8 +63,7 @@ public class RtmpActivity extends AppCompatActivity
     private RadioGroup rgChannel;
     private Spinner spResolution;
     private CheckBox cbEchoCanceler, cbNoiseSuppressor;
-    private EditText etVideoBitrate, etFps, etAudioBitrate, etSampleRate, etWowzaUser,
-            etWowzaPassword;
+    private EditText etVideoBitrate, etFps, etAudioBitrate, etSampleRate;
     private String lastVideoBitrate;
     private TextView tvBitrate;
 
@@ -143,11 +141,9 @@ public class RtmpActivity extends AppCompatActivity
                 (CheckBox) navigationView.getMenu().findItem(R.id.cb_echo_canceler).getActionView();
         cbNoiseSuppressor =
                 (CheckBox) navigationView.getMenu().findItem(R.id.cb_noise_suppressor).getActionView();
-        //radiobuttons
-        RadioButton rbTcp =
-                (RadioButton) navigationView.getMenu().findItem(R.id.rb_tcp).getActionView();
+
         rgChannel = (RadioGroup) navigationView.getMenu().findItem(R.id.channel).getActionView();
-        rbTcp.setChecked(true);
+
         //spinners
         spResolution = (Spinner) navigationView.getMenu().findItem(R.id.sp_resolution).getActionView();
 
@@ -174,9 +170,7 @@ public class RtmpActivity extends AppCompatActivity
         etFps.setText("30");
         etAudioBitrate.setText("128");
         etSampleRate.setText("44100");
-        etWowzaUser = (EditText) navigationView.getMenu().findItem(R.id.et_user).getActionView();
-        etWowzaPassword =
-                (EditText) navigationView.getMenu().findItem(R.id.et_password).getActionView();
+
     }
 
     @Override

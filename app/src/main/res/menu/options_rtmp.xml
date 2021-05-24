@@ -2,15 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
-  <item android:title="@string/protocols">
-    <menu>
-      <item
-          android:title="@string/tcp"
-          app:actionViewClass="android.widget.RadioButton"
-          android:id="@+id/rb_tcp"
-          />
-    </menu>
-  </item>
   <item android:title="@string/video">
     <menu>
       <item
@@ -56,20 +47,6 @@
           android:title="@string/noise_suppressor"
           app:actionViewClass="android.widget.CheckBox"
           android:id="@+id/cb_noise_suppressor"
-          />
-    </menu>
-  </item>
-  <item android:title="@string/auth">
-    <menu>
-      <item
-          android:title="@string/user"
-          app:actionLayout="@xml/edit_text_auth"
-          android:id="@+id/et_user"
-          />
-      <item
-          android:title="@string/password"
-          app:actionLayout="@xml/edit_text_auth"
-          android:id="@+id/et_password"
           />
     </menu>
   </item>
