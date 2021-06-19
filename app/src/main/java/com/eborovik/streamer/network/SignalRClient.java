@@ -14,10 +14,18 @@ public class SignalRClient
         void execute(String param);
     }
 
+    public  interface StopStreamCallback{
+        void execute();
+    }
+
     private Callback callback;
+    private StopStreamCallback stopStreamCallback;
 
     public void setCallback(Callback callback) {
         this.callback = callback;
+    }
+    public void setStopStreamCallback(StopStreamCallback callback) {
+        this.stopStreamCallback = callback;
     }
 
     public SignalRClient(String url)
@@ -31,6 +39,11 @@ public class SignalRClient
             Log.e(TAG, streamUrl);
             callback.execute(streamUrl);
         }, String.class);
+
+        this.hubConnection.on("StopStream", () -> {
+            Log.e(TAG, "stream stopped");
+            stopStreamCallback.execute();
+        });
     }
 
     private void register(String streamId) {

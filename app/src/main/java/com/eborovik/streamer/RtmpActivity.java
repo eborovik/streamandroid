@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -39,7 +38,6 @@ import com.pedro.rtplibrary.rtmp.RtmpCamera1;
 
 import net.ossrs.rtmp.ConnectCheckerRtmp;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,8 +52,7 @@ public class RtmpActivity extends AppCompatActivity
     private Button bStartStop, bRecord;
     private EditText etUrl;
     private String currentDateAndTime = "";
-    private File folder = new File(Environment.getExternalStorageDirectory().getAbsolutePath()
-            + "/rtmp-rtsp-stream-client-java");
+
     //options menu
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -82,6 +79,7 @@ public class RtmpActivity extends AppCompatActivity
             setupView();
             src = new SignalRClient("http://10.0.2.2:7000/streamhub");
             src.setCallback(startRecordingCallback);
+            src.setStopStreamCallback(stopStreamCallback);
         } else {
             finish();
         }
@@ -222,8 +220,6 @@ public class RtmpActivity extends AppCompatActivity
 
                     request.startStream(mAuthHelper.getIdToken(), mAuthHelper.getStreamId(), startStreamCallback);
 
-
-
                 }
                 else {
                     request.stopStream(mAuthHelper.getIdToken(), mAuthHelper.getStreamId(), null);
@@ -283,6 +279,13 @@ public class RtmpActivity extends AppCompatActivity
         }
     };
 
+    private SignalRClient.StopStreamCallback stopStreamCallback = new SignalRClient.StopStreamCallback () {
+        @Override
+        public void execute() {
+            stopStream();
+        }
+    };
+
     @Override
     public void onConnectionSuccessRtmp() {
         runOnUiThread(new Runnable() {
@@ -306,10 +309,6 @@ public class RtmpActivity extends AppCompatActivity
                         && rtmpCamera1.isRecording()) {
                     rtmpCamera1.stopRecord();
                     bRecord.setText(R.string.start_record);
-                    Toast.makeText(RtmpActivity.this,
-                            "file " + currentDateAndTime + ".mp4 saved in " + folder.getAbsolutePath(),
-                            Toast.LENGTH_SHORT).show();
-                    currentDateAndTime = "";
                 }
             }
         });
@@ -335,10 +334,6 @@ public class RtmpActivity extends AppCompatActivity
                         && rtmpCamera1.isRecording()) {
                     rtmpCamera1.stopRecord();
                     bRecord.setText(R.string.start_record);
-                    Toast.makeText(RtmpActivity.this,
-                            "file " + currentDateAndTime + ".mp4 saved in " + folder.getAbsolutePath(),
-                            Toast.LENGTH_SHORT).show();
-                    currentDateAndTime = "";
                 }
             }
         });
@@ -383,9 +378,6 @@ public class RtmpActivity extends AppCompatActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && rtmpCamera1.isRecording()) {
             rtmpCamera1.stopRecord();
             bRecord.setText(R.string.start_record);
-            Toast.makeText(this,
-                    "file " + currentDateAndTime + ".mp4 saved in " + folder.getAbsolutePath(),
-                    Toast.LENGTH_SHORT).show();
             currentDateAndTime = "";
         }
         if (rtmpCamera1.isStreaming()) {

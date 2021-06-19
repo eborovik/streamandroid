@@ -4,15 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.auth0.android.jwt.JWT;
 import com.eborovik.streamer.network.Token;
 
 public class AuthHelper {
-
-    /**
-     * Key for username in the jwt claim
-     */
     private static final String JWT_KEY_USERNAME = "username";
     private static final String PREFS = "prefs";
     private static final String PREF_TOKEN = "pref_token";
@@ -61,10 +56,6 @@ public class AuthHelper {
         return token != null;
     }
 
-    /**
-     * Gets the username of the signed in user
-     * @return - username of the signed in user
-     */
     public String getUsername() {
         if (isLoggedIn()) {
             return decodeUsername(getIdToken());
